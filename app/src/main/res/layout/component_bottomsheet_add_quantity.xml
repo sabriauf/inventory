@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/view_add_quantity_parent"
+    android:layout_width="match_parent"
+    android:layout_height="500dp"
+    app:behavior_hideable="true"
+    app:behavior_peekHeight="0dp"
+    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+    <View
+        android:id="@+id/shadow"
+        android:layout_width="match_parent"
+        android:layout_height="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="@drawable/shadow_gradient" />
+
+    <View
+        android:id="@+id/back"
+        android:layout_width="0dp"
+        android:layout_height="16dp"
+        android:background="#11000000"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/shadow" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@drawable/round_corner_white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/shadow"
+        app:layout_constraintVertical_bias="0.0">
+
+        <TextView
+            android:id="@+id/text_add_quantity_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="24dp"
+            android:textColor="@color/colorTextPrimary"
+            android:textSize="@dimen/textMedium"
+            android:fontFamily="@font/roboto_light"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="#3486-Oranges" />
+
+        <TextView
+            android:id="@+id/text_add_quantity_sub_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto_light"
+            android:textAlignment="textEnd"
+            android:textColor="@color/colorTextTertiary"
+            android:textSize="@dimen/textTertiary"
+            app:layout_constraintBottom_toBottomOf="@+id/edt_set_quantity_price"
+            app:layout_constraintEnd_toStartOf="@+id/edt_set_quantity_price"
+            app:layout_constraintTop_toBottomOf="@+id/text_add_quantity_title"
+            tools:text="1pcs Rs.30.00" />
+
+        <EditText
+            android:id="@+id/edt_set_quantity_price"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto_light"
+            android:textAlignment="textEnd"
+            android:textColor="@color/colorTextTertiary"
+            android:textSize="@dimen/textTertiary"
+            android:inputType="numberDecimal"
+            app:layout_constraintEnd_toEndOf="@+id/text_add_quantity_title"
+            app:layout_constraintTop_toBottomOf="@+id/text_add_quantity_title"
+            tools:text="30.00" />
+
+        <EditText
+            android:id="@+id/edt_add_quantity"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="36dp"
+            android:background="@drawable/round_corner_edittext"
+            android:fontFamily="@font/roboto_regular"
+            android:hint="@string/quantity"
+            android:inputType="numberDecimal"
+            android:padding="10dp"
+            android:textAlignment="center"
+            app:layout_constraintStart_toStartOf="@+id/text_add_quantity_title"
+            app:layout_constraintTop_toBottomOf="@+id/text_add_quantity_sub_title" />
+
+        <TextView
+            android:id="@+id/text_add_quantity_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:textColor="@color/colorTextTertiary"
+            android:fontFamily="@font/roboto_regular"
+            android:textSize="@dimen/textLarge"
+            app:layout_constraintBottom_toBottomOf="@+id/edt_add_quantity"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/edt_add_quantity"
+            tools:text="Rs. 1,500.00" />
+
+        <Button
+            android:id="@+id/btn_add_quantity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/round_corner_button_sync"
+            android:paddingStart="30dp"
+            android:paddingEnd="30dp"
+            android:text="@string/add_to_invoice"
+            android:textAllCaps="false"
+            android:fontFamily="@font/roboto_regular"
+            android:textColor="@color/colorTextWhite"
+            android:textSize="@dimen/textLarge"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/edt_add_quantity" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

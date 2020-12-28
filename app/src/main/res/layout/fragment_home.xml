@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.home.HomeFragment">
+
+    <View
+        android:id="@+id/view_back_color"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/colorMainBack"
+        app:layout_constraintBottom_toTopOf="@+id/guide_top"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guide_top"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.2" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guide_left"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.25" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guide_right"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.75" />
+
+    <TextView
+        android:id="@+id/text_home_title_today"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_light"
+        android:text="@string/today"
+        android:textAlignment="textEnd"
+        android:textColor="@color/colorTextPrimary"
+        android:textSize="@dimen/textXLarge"
+        app:layout_constraintBottom_toBottomOf="@+id/text_home_total"
+        app:layout_constraintStart_toStartOf="@+id/text_home_title_sales"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/text_home_title_sales"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_light"
+        android:text="@string/sales"
+        android:textAlignment="textEnd"
+        android:textColor="@color/colorTextPrimary"
+        android:textSize="@dimen/textSecondary"
+        app:layout_constraintEnd_toStartOf="@+id/text_home_total"
+        app:layout_constraintHorizontal_bias="0.15"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintStart_toStartOf="@+id/view_back_color"
+        app:layout_constraintTop_toBottomOf="@+id/text_home_title_today" />
+
+    <TextView
+        android:id="@+id/text_home_total"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:fontFamily="@font/roboto_light"
+        android:textColor="@color/colorTextSecondary"
+        android:textSize="@dimen/textLarge"
+        app:layout_constraintBottom_toTopOf="@+id/text_home_invoices_count"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.35"
+        app:layout_constraintVertical_chainStyle="packed"
+        tools:text="Rs 25,000.00" />
+
+    <TextView
+        android:id="@+id/text_home_invoices_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_light"
+        android:textColor="@color/colorTextTertiary"
+        android:textSize="@dimen/textTertiary"
+        app:layout_constraintBottom_toBottomOf="@+id/view_back_color"
+        app:layout_constraintEnd_toEndOf="@+id/text_home_total"
+        app:layout_constraintTop_toBottomOf="@+id/text_home_total"
+        tools:text="of 13 invoices" />
+
+    <Button
+        android:id="@+id/btn_home_synchronize"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/round_corner_button_sync"
+        android:fontFamily="@font/roboto_regular"
+        android:text="@string/synchronize"
+        android:textAllCaps="false"
+        android:textColor="@color/colorTextWhite"
+        android:textSize="@dimen/textMedium"
+        app:layout_constraintBottom_toBottomOf="@id/guide_top"
+        app:layout_constraintEnd_toStartOf="@+id/guide_right"
+        app:layout_constraintStart_toStartOf="@+id/guide_left"
+        app:layout_constraintTop_toTopOf="@+id/guide_top" />
+
+    <TextView
+        android:id="@+id/text_home_last_sync"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_light"
+        android:textColor="@color/colorTextTertiary"
+        android:textSize="@dimen/textSmall"
+        app:layout_constraintEnd_toStartOf="@+id/guide_right"
+        app:layout_constraintStart_toStartOf="@+id/guide_left"
+        app:layout_constraintTop_toBottomOf="@+id/btn_home_synchronize"
+        tools:text="Last Sync 13-06-20 18:15" />
+
+    <TextView
+        android:id="@+id/text_home_invoices"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/roboto_regular"
+        android:text="@string/invoices"
+        android:textAlignment="textEnd"
+        android:textColor="@color/colorTextPrimary"
+        android:textSize="@dimen/textXLarge"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_home_last_sync" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_home_invoices"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_home_invoices" />
+
+    <Button
+        android:id="@+id/btn_home_create_invoice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/round_corner_button_sync"
+        android:fontFamily="@font/roboto_regular"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:text="@string/create_invoice"
+        android:textAllCaps="false"
+        android:textColor="@color/colorTextWhite"
+        android:textSize="@dimen/textSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guide_right"
+        app:layout_constraintStart_toStartOf="@+id/guide_left" />
+
+    <androidx.core.widget.ContentLoadingProgressBar
+        android:id="@+id/progress_home_sync"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/view_back_color" />
+</androidx.constraintlayout.widget.ConstraintLayout>

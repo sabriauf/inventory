@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_invoice_parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.invoice.InvoiceActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <View
+            android:id="@+id/view_back_blue"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginBottom="16dp"
+            android:background="@color/colorMainBack"
+            app:layout_constraintBottom_toTopOf="@+id/text_invoice_item_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/text_invoice_title_no"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:fontFamily="@font/roboto_light"
+            android:text="@string/invoice_no"
+            android:textAlignment="textEnd"
+            android:textColor="@color/colorTextSecondary"
+            android:textSize="@dimen/textSecondary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/text_invoice_no"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/roboto_regular"
+            android:textAlignment="textEnd"
+            android:textColor="@color/colorTextSecondary"
+            android:textSize="@dimen/textXXLarge"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@+id/text_invoice_title_no"
+            app:layout_constraintTop_toBottomOf="@+id/text_invoice_title_no"
+            tools:text="#2567" />
+
+        <TextView
+            android:id="@+id/text_invoice_date_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:fontFamily="@font/roboto_light"
+            android:text="@string/invoice_date"
+            android:textAlignment="textEnd"
+            android:textColor="@color/colorTextPrimary"
+            android:textSize="@dimen/textSecondary"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_invoice_no" />
+
+        <TextView
+            android:id="@+id/text_invoice_to_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/roboto_light"
+            android:text="@string/invoice_to"
+            android:textAlignment="textEnd"
+            android:textColor="@color/colorTextPrimary"
+            android:textSize="@dimen/textSecondary"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_invoice_date_title" />
+
+        <TextView
+            android:id="@+id/text_invoice_date"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/round_corner_white"
+            android:fontFamily="@font/roboto_light"
+            android:padding="5dp"
+            android:textAlignment="center"
+            android:textColor="@color/colorTextTertiary"
+            android:textSize="@dimen/textSecondary"
+            app:layout_constraintBottom_toBottomOf="@+id/text_invoice_date_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline"
+            app:layout_constraintTop_toTopOf="@+id/text_invoice_date_title"
+            tools:text="2020.01.10" />
+
+        <TextView
+            android:id="@+id/text_invoice_to"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/round_corner_white"
+            android:fontFamily="@font/roboto_light"
+            android:hint="@string/click_to_select"
+            android:padding="5dp"
+            android:textAlignment="center"
+            android:textColor="@color/colorTextTertiary"
+            android:textSize="@dimen/textSecondary"
+            app:layout_constraintBottom_toBottomOf="@+id/text_invoice_to_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline"
+            app:layout_constraintTop_toTopOf="@+id/text_invoice_to_title" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5" />
+
+        <TextView
+            android:id="@+id/text_invoice_item_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="32dp"
+            android:text="@string/items"
+            android:textAlignment="textEnd"
+            android:fontFamily="@font/roboto_regular"
+            android:textColor="@color/colorTextTertiary"
+            android:textSize="@dimen/textXLarge"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_invoice_to_title" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_invoice_items"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_margin="16dp"
+            app:layout_constraintBottom_toTopOf="@+id/btn_invoice_print"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_invoice_item_title" />
+
+        <Button
+            android:id="@+id/btn_invoice_print"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/round_corner_button_sync"
+            android:paddingStart="30dp"
+            android:paddingEnd="30dp"
+            android:text="@string/print"
+            android:textAllCaps="false"
+            android:textColor="@color/colorTextWhite"
+            android:textSize="@dimen/textMedium"
+            android:fontFamily="@font/roboto_regular"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btn_invoice_save"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/btn_invoice_save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/round_corner_button_sync"
+            android:paddingStart="30dp"
+            android:paddingEnd="30dp"
+            android:text="@string/save"
+            android:textAllCaps="false"
+            android:fontFamily="@font/roboto_regular"
+            android:textColor="@color/colorTextWhite"
+            android:textSize="@dimen/textMedium"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/btn_invoice_print" />
+
+        <androidx.core.widget.ContentLoadingProgressBar
+            android:id="@+id/progress_invoice"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- include customer bottom sheet -->
+    <include
+        android:id="@+id/bottonsheet_invoice"
+        layout="@layout/component_bottomsheet_customer"
+        android:elevation="10dp" />
+
+    <!-- include add item bottom sheet -->
+    <include
+        android:id="@+id/bottonsheet_add_item"
+        layout="@layout/component_bottomsheet_add_item"
+        android:elevation="10dp" />
+
+    <!-- include add item bottom sheet -->
+    <include
+        android:id="@+id/bottonsheet_add_quantity"
+        layout="@layout/component_bottomsheet_add_quantity"
+        android:elevation="10dp" />
+
+    <!-- include payment bottom sheet -->
+    <include
+        android:id="@+id/bottonsheet_payment"
+        layout="@layout/component_bottomsheet_payment"
+        android:elevation="10dp" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

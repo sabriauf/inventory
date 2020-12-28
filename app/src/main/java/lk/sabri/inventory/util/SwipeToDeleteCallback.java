@@ -1,0 +1,37 @@
+package lk.sabri.inventory.util;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.RecyclerView;
+
+import lk.sabri.inventory.adapter.item.InvoiceItemAdapter;
+import lk.sabri.inventory.adapter.item.InvoiceFooterViewHolder;
+import lk.sabri.inventory.adapter.item.InvoiceItemViewHolder;
+
+public class SwipeToDeleteCallback extends ItemTouchHelper.SimpleCallback {
+
+    private InvoiceItemAdapter mAdapter;
+
+    public SwipeToDeleteCallback(InvoiceItemAdapter adapter) {
+        super(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
+        mAdapter = adapter;
+    }
+
+    @Override
+    public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder,
+                          @NonNull RecyclerView.ViewHolder target) {
+        return false;
+    }
+
+    @Override
+    public int getSwipeDirs(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+        if (!(viewHolder instanceof InvoiceItemViewHolder)) return 0;
+        return super.getSwipeDirs(recyclerView, viewHolder);
+    }
+
+    @Override
+    public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+        int position = viewHolder.getAdapterPosition();
+        mAdapter.deleteItem(position);
+    }
+}

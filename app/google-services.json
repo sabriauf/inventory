@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "377903279989",
+    "firebase_url": "https://invoice-bab7a.firebaseio.com",
+    "project_id": "invoice-bab7a",
+    "storage_bucket": "invoice-bab7a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:377903279989:android:940eff4302fdb7bb3e6d3c",
+        "android_client_info": {
+          "package_name": "lk.sabri.inventory"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "377903279989-8dqlpp0ad9jclc4q7cmacklas6kpu7jk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQmb4mbovqeAGy8VBGOrd8UNJVSVE2DpY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "377903279989-8dqlpp0ad9jclc4q7cmacklas6kpu7jk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
