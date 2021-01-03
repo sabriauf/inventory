@@ -32,6 +32,20 @@ public class InvoiceFooterViewHolder {
         }
     }
 
+    public class InvoicePaymentAmountViewHolder extends RecyclerView.ViewHolder {
+
+        TextView txtTitle;
+        TextView txtValue;
+        TextView txtDate;
+
+        public InvoicePaymentAmountViewHolder(@NonNull View itemView) {
+            super(itemView);
+            txtTitle = itemView.findViewById(R.id.text_invoice_add_item_total);
+            txtValue = itemView.findViewById(R.id.text_invoice_add_item_value);
+            txtDate = itemView.findViewById(R.id.text_invoice_add_item_date);
+        }
+    }
+
     public class InvoiceBalanceViewHolder extends RecyclerView.ViewHolder {
 
         TextView txtValue;

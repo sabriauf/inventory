@@ -27,6 +27,7 @@ import android.widget.Toast;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -53,7 +54,6 @@ public class InvoiceShowActivity extends InvoiceBaseActivity {
     //instances
     private InvoiceShowViewModel invoiceViewModel;
     private InvoiceItemAdapter adapter;
-    private Payment payment;
 
     //views
     private RecyclerView recyclerInvoiceItems;
@@ -65,9 +65,10 @@ public class InvoiceShowActivity extends InvoiceBaseActivity {
         super.onCreate(savedInstanceState);
 
         invoiceViewModel = new ViewModelProvider(this).get(InvoiceShowViewModel.class);
-        paymentBottomSheet = findViewById(R.id.bottonsheet_payment);
 
         setContentView(R.layout.activity_invoice_view);
+
+        paymentBottomSheet = findViewById(R.id.bottonsheet_payment);
 
         readExtras();
         setView();
@@ -96,9 +97,24 @@ public class InvoiceShowActivity extends InvoiceBaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_PRINTER_OPEN && resultCode == Activity.RESULT_OK) {
-            Invoice invoice = invoiceViewModel.getInvoice().getValue();
+            final Invoice invoice = invoiceViewModel.getInvoice().getValue();
+
             if (invoice != null) {
-                printReceipt(invoice.getInvoiceNo(), invoice.getDate(), invoice.getCustomer(), invoice.getItems(), invoice.getTotal());
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        PaymentDAO paymentDAO = InventoryDatabase.getInstance(InvoiceShowActivity.this).paymentDAO();
+                        final List<Payment> payments = paymentDAO.getPaymentsForInvoice(String.valueOf(invoice.getInvoiceNo()));
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                printInvoiceReceipt(invoice.getInvoiceNo(), invoice.getDate(), invoice.getCustomer(),
+                                        invoice.getItems(), payments != null ? payments : new ArrayList<Payment>(), invoice.getTotal());
+                            }
+                        });
+                    }
+                }).start();
             }
         }
     }
@@ -222,7 +238,7 @@ public class InvoiceShowActivity extends InvoiceBaseActivity {
         spnPaymentType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                if (Constants.PAYMENT_TYPES[i].equals("Cheque")) {
+                if (Constants.PAYMENT_TYPES[i].equals(PaymentMethodAnnotation.CHEQUE)) {
                     edtChequeNo.setVisibility(View.VISIBLE);
                     txtChequeNo.setVisibility(View.VISIBLE);
                 } else {
@@ -239,25 +255,27 @@ public class InvoiceShowActivity extends InvoiceBaseActivity {
         btnPay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                    String amount = edtAmount.getText().toString();
-                    try {
-                        if (!amount.equals("")) {
-                            showSaveDataDialog(Constants.PAYMENT_TYPES[spnPaymentType.getSelectedItemPosition()], Double.parseDouble(amount));
-                            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                        } else
-                            Toast.makeText(InvoiceShowActivity.this, "Please enter valid amount", Toast.LENGTH_LONG).show();
-                    } catch (NumberFormatException ex) {
+                String amount = edtAmount.getText().toString();
+                try {
+                    if (!amount.equals("")) {
+                        showSaveDataDialog(Constants.PAYMENT_TYPES[spnPaymentType.getSelectedItemPosition()], edtChequeNo.getText().toString(), Double.parseDouble(amount));
+                        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                    } else
                         Toast.makeText(InvoiceShowActivity.this, "Please enter valid amount", Toast.LENGTH_LONG).show();
-                    }
+                } catch (NumberFormatException ex) {
+                    Toast.makeText(InvoiceShowActivity.this, "Please enter valid amount", Toast.LENGTH_LONG).show();
                 }
+            }
         });
     }
 
-    private void addToPaymentDB(@PaymentMethodAnnotation.Method String method, double amount) {
+    private void addToPaymentDB(@PaymentMethodAnnotation.Method String method, String details, double amount) {
         final Payment payment = new Payment();
         payment.setAmount(amount);
         payment.setMethod(method);
+        payment.setDetails(details);
         payment.setDate(Calendar.getInstance().getTime());
+        payment.setInvoiceId(invoiceId);
 
         new Thread(new Runnable() {
             @Override
@@ -268,15 +286,15 @@ public class InvoiceShowActivity extends InvoiceBaseActivity {
         }).start();
     }
 
-    private void showSaveDataDialog(final String paymentType, final double amount) {
+    private void showSaveDataDialog(final String paymentType, final String chequeNo, final double amount) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         builder.setTitle(R.string.payment);
         builder.setMessage(R.string.save_message_payment);
         builder.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                addToPaymentDB(paymentType, amount);
-                showPaymentInfo(paymentType, amount);
+                addToPaymentDB(paymentType, chequeNo, amount);
+                showPaymentInfo(paymentType, chequeNo, amount);
             }
         });
         builder.setNegativeButton(R.string.dont_save, new DialogInterface.OnClickListener() {
@@ -288,10 +306,13 @@ public class InvoiceShowActivity extends InvoiceBaseActivity {
         builder.show();
     }
 
-    private void showPaymentInfo(String paymentType, double amount) {
+    private void showPaymentInfo(String paymentType, String chequeNo, double amount) {
         InvoiceItem item = new InvoiceItem();
         item.setInvoiceId(InvoiceItemAdapter.VIEW_TYPE_PAYMENT_AMOUNT);
+        if (paymentType.equals(PaymentMethodAnnotation.CHEQUE))
+            paymentType = paymentType.concat(" " + chequeNo);
         item.setItemName(paymentType);
+        item.setPrice(Calendar.getInstance().getTimeInMillis());
         item.setQuantity(1);
         item.setUnitPrice(amount);
 
@@ -307,9 +328,9 @@ public class InvoiceShowActivity extends InvoiceBaseActivity {
                 invoiceViewModel.getInvoice().getValue().getItems().add(invoiceViewModel.getInvoice().getValue().getItems().size() - 1, balanceItem);
                 adapter.notifyItemInserted(invoiceViewModel.getInvoice().getValue().getItems().size() - 1);
             } else {
-                invoiceViewModel.getInvoice().getValue().getItems().set(pos, item);
-                adapter.notifyItemChanged(pos);
-                adapter.notifyItemChanged(invoiceViewModel.getInvoice().getValue().getItems().size() - 1); //balance item value reset
+                invoiceViewModel.getInvoice().getValue().getItems().add(pos + 1, item);
+                adapter.notifyItemInserted(pos + 1);
+                adapter.notifyItemChanged(invoiceViewModel.getInvoice().getValue().getItems().size() - 2); //balance item value reset
             }
         }
     }

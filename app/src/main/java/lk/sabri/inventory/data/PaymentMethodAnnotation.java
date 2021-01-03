@@ -8,9 +8,9 @@ import java.lang.annotation.RetentionPolicy;
 
 public class PaymentMethodAnnotation implements Serializable {
 
-    public static final String CASH = "cash";
-    public static final String CREDIT = "credit";
-    public static final String CHEQUE = "cheque";
+    public static final String CASH = "Cash";
+    public static final String CREDIT = "Credit";
+    public static final String CHEQUE = "Cheque";
 
     @StringDef({CASH, CREDIT, CHEQUE})
     @Retention(RetentionPolicy.SOURCE)

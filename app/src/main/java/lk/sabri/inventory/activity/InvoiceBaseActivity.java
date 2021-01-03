@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.print.PrintAttributes;
+import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -21,6 +22,7 @@ import com.uttampanchasara.pdfgenerator.CreatePdf;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -28,6 +30,8 @@ import java.util.Locale;
 import lk.sabri.inventory.R;
 import lk.sabri.inventory.data.Customer;
 import lk.sabri.inventory.data.InvoiceItem;
+import lk.sabri.inventory.data.Payment;
+import lk.sabri.inventory.data.PaymentMethodAnnotation;
 import lk.sabri.inventory.util.AppUtil;
 import lk.sabri.inventory.util.BixolonPrinter;
 import lk.sabri.inventory.util.TimeFormatter;
@@ -136,7 +140,7 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
     protected abstract boolean saveData(boolean close);
 
 
-    protected void printReceipt(String invoiceNo, Date saleDate, Customer customerObj, List<InvoiceItem> items, double totalValue) {
+    protected void printInvoiceReceipt(String invoiceNo, Date saleDate, Customer customerObj, List<InvoiceItem> items, List<Payment> paymentList, double totalValue) {
         getPrinterInstance().beginTransactionPrint();
 
         StringBuilder dottedLine = new StringBuilder();
@@ -183,6 +187,100 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
             builderTotal.append(" ");
         builderTotal.append(total);
         getPrinterInstance().printText(builderTotal.toString() + "\n", BixolonPrinter.ALIGNMENT_LEFT, BixolonPrinter.ATTRIBUTE_BOLD, 2);
+
+        double payments = 0;
+        if (items != null) {
+            for (Payment item : paymentList) {
+                if (item != null) {
+                    payments += item.getAmount();
+                    getPrinterInstance().printText(getPaymentRowString(item), BixolonPrinter.ALIGNMENT_LEFT,
+                            BixolonPrinter.ATTRIBUTE_NORMAL, 1);
+                }
+            }
+        }
+
+        //printing balance
+        if(payments > 0) {
+            StringBuilder builderBalance = new StringBuilder();
+            String balance = String.format(Locale.getDefault(), "Rs. %,.2f", totalValue - payments);
+            builderBalance.append("Balance");
+            spaces = PRINTER_CHAR_LENGTH_SIZE_2 - (builderBalance.length() + total.length());
+            for (int i = 0; i < spaces; i++)
+                builderBalance.append(" ");
+            builderBalance.append(balance);
+            getPrinterInstance().printText(builderBalance.toString() + "\n", BixolonPrinter.ALIGNMENT_LEFT, BixolonPrinter.ATTRIBUTE_BOLD, 2);
+        }
+
+        //separator
+        getPrinterInstance().printText(dottedLine.toString() + "\n\n\n", BixolonPrinter.ALIGNMENT_LEFT, BixolonPrinter.ATTRIBUTE_NORMAL, 1);
+
+        //footer
+        getPrinterInstance().printText("*** Thank you for your purchase! ***" + "\n", BixolonPrinter.ALIGNMENT_CENTER, BixolonPrinter.ATTRIBUTE_BOLD, 1);
+        getPrinterInstance().printText("Feel free to visit www.evergreenlanka.lk" + "\n", BixolonPrinter.ALIGNMENT_CENTER, BixolonPrinter.ATTRIBUTE_NORMAL, 1);
+
+        getPrinterInstance().printText(dottedLine.toString(), BixolonPrinter.ALIGNMENT_LEFT, BixolonPrinter.ATTRIBUTE_NORMAL, 1);
+        getPrinterInstance().printText("\n\n\n\n", BixolonPrinter.ALIGNMENT_CENTER, BixolonPrinter.ATTRIBUTE_BOLD, 1);
+
+        getPrinterInstance().endTransactionPrint();
+    }
+
+    protected void printPaymentReceipt(String invoiceNo, Date saleDate, Customer customerObj, List<Payment> items, double totalValue) {
+        getPrinterInstance().beginTransactionPrint();
+
+        StringBuilder dottedLine = new StringBuilder();
+        for (int i = 0; i < PRINTER_CHAR_LENGTH_SIZE_1; i++) {
+            dottedLine.append(".");
+        }
+
+        getPrinterInstance().printText(dottedLine.toString() + "\n\n", BixolonPrinter.ALIGNMENT_LEFT, BixolonPrinter.ATTRIBUTE_NORMAL, 1);
+
+        getPrinterInstance().printText("Evergreen Lanka\n\n", BixolonPrinter.ALIGNMENT_CENTER, BixolonPrinter.ATTRIBUTE_BOLD, 3);
+        getPrinterInstance().printText("Kumbukulawa,Polpithigama\n", BixolonPrinter.ALIGNMENT_CENTER, BixolonPrinter.ATTRIBUTE_NORMAL, 1);
+        getPrinterInstance().printText("evergreenlanka@yahoo.com\n", BixolonPrinter.ALIGNMENT_CENTER, BixolonPrinter.ATTRIBUTE_NORMAL, 1);
+        getPrinterInstance().printText("www.evergreenlanka.lk\n", BixolonPrinter.ALIGNMENT_CENTER, BixolonPrinter.ATTRIBUTE_NORMAL, 1);
+        getPrinterInstance().printText("Tel: 0703 914 219 / 0372 273 107  \n\n", BixolonPrinter.ALIGNMENT_CENTER, BixolonPrinter.ATTRIBUTE_NORMAL, 1);
+
+        getPrinterInstance().printText(":::::: SALES INVOICE ::::::\n\n", BixolonPrinter.ALIGNMENT_CENTER, BixolonPrinter.ATTRIBUTE_NORMAL, 2);
+
+        getPrinterInstance().printText("Invoice No " + invoiceNo + "\n", BixolonPrinter.ALIGNMENT_LEFT, BixolonPrinter.ATTRIBUTE_NORMAL, 1);
+
+        getPrinterInstance().printText(getBasicDetails(customerObj, saleDate) + "\n", BixolonPrinter.ALIGNMENT_LEFT, BixolonPrinter.ATTRIBUTE_NORMAL, 1);
+
+        //separator
+        getPrinterInstance().printText(dottedLine.toString() + "\n\n", BixolonPrinter.ALIGNMENT_LEFT, BixolonPrinter.ATTRIBUTE_NORMAL, 1);
+
+        //printing sub total
+        StringBuilder builderTotal = new StringBuilder();
+        String total = String.format(Locale.getDefault(), "Rs. %,.2f", totalValue);
+        builderTotal.append("Sub Total");
+        int spaces = PRINTER_CHAR_LENGTH_SIZE_2 - (builderTotal.length() + total.length());
+        for (int i = 0; i < spaces; i++)
+            builderTotal.append(" ");
+        builderTotal.append(total);
+        getPrinterInstance().printText(builderTotal.toString() + "\n", BixolonPrinter.ALIGNMENT_LEFT, BixolonPrinter.ATTRIBUTE_BOLD, 2);
+
+        double payments = 0;
+        if (items != null) {
+            for (Payment item : items) {
+                if (item != null) {
+                    payments += item.getAmount();
+                    getPrinterInstance().printText(getPaymentRowString(item), BixolonPrinter.ALIGNMENT_LEFT,
+                            BixolonPrinter.ATTRIBUTE_NORMAL, 1);
+                }
+            }
+        }
+
+        //printing balance
+        if(payments > 0) {
+            StringBuilder builderBalance = new StringBuilder();
+            String balance = String.format(Locale.getDefault(), "Rs. %,.2f", totalValue - payments);
+            builderBalance.append("Balance");
+            spaces = PRINTER_CHAR_LENGTH_SIZE_2 - (builderBalance.length() + total.length());
+            for (int i = 0; i < spaces; i++)
+                builderBalance.append(" ");
+            builderBalance.append(balance);
+            getPrinterInstance().printText(builderBalance.toString() + "\n", BixolonPrinter.ALIGNMENT_LEFT, BixolonPrinter.ATTRIBUTE_BOLD, 2);
+        }
 
         //separator
         getPrinterInstance().printText(dottedLine.toString() + "\n\n\n", BixolonPrinter.ALIGNMENT_LEFT, BixolonPrinter.ATTRIBUTE_NORMAL, 1);
@@ -316,6 +414,41 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
             builderTitle.append(" ");
         builderTitle.append(unitPrice);
         for (int i = 0; i < balance / 2; i++)
+            builderTitle.append(" ");
+
+        //if have any remainder
+        int remainder = PRINTER_CHAR_LENGTH_SIZE_1 - (builderTitle.length() + price.length());
+        if (remainder > 0)
+            for (int i = 0; i < remainder; i++)
+                builderTitle.append(" ");
+
+        builderTitle.append(price);
+
+        return builderTitle.toString();
+    }
+
+    private String getPaymentRowString(Payment item) {
+        StringBuilder builderTitle = new StringBuilder();
+        String itemName = item.getMethod().equals(PaymentMethodAnnotation.CHEQUE) ?
+                String.format(Locale.getDefault(), PaymentMethodAnnotation.CHEQUE + " %s", item.getDetails()) : item.getMethod();
+        builderTitle.append(itemName);
+
+        String price = String.format(Locale.getDefault(), "%,.2f\n", item.getAmount());
+
+        int sectionSize = PRINTER_CHAR_LENGTH_SIZE_1 / 11;
+        int balance = sectionSize * 5 - itemName.length();
+        for (int i = 0; i < balance; i++)
+            builderTitle.append(" ");
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(item.getDate());
+        String date = DateFormat.format("dd-MM-yyyy", cal).toString();
+
+        balance = sectionSize * 2 - date.length();
+        for (int i = 0; i < balance / 2; i++)
+            builderTitle.append(" ");
+        builderTitle.append(date);
+        for (int i = 0; i < (sectionSize * 2) - ((balance / 2) + date.length()); i++)
             builderTitle.append(" ");
 
         //if have any remainder

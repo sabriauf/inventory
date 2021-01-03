@@ -106,6 +106,8 @@
             android:textAlignment="center"
             android:textColor="@color/colorTextTertiary"
             android:textSize="@dimen/textSecondary"
+            android:maxLines="1"
+            android:ellipsize="end"
             app:layout_constraintBottom_toBottomOf="@+id/text_invoice_to_title"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/guideline"

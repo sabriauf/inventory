@@ -114,8 +114,13 @@ public class InvoiceActivity extends InvoiceBaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_PRINTER_OPEN && resultCode == Activity.RESULT_OK) {
-            printReceipt(invoiceViewModel.getInvoiceNo().getValue(), invoiceViewModel.getDate().getValue(),
-                    invoiceViewModel.getCustomer().getValue(), invoiceViewModel.getItems().getValue(),
+
+            List<Payment> payments = new ArrayList<>();
+            if (payment != null)
+                payments.add(payment);
+
+            printInvoiceReceipt(invoiceViewModel.getInvoiceNo().getValue(), invoiceViewModel.getDate().getValue(),
+                    invoiceViewModel.getCustomer().getValue(), invoiceViewModel.getItems().getValue(), payments,
                     invoiceViewModel.getTotal().getValue());
             saveData(true);
         }
@@ -443,7 +448,7 @@ public class InvoiceActivity extends InvoiceBaseActivity {
             @Override
             public void onAddItemClick() {
                 CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) addItemSheet.getLayoutParams();
-                params.height = (int) (AppUtil.getDeviceHeight(InvoiceActivity.this) * Constants.BOTTOM_SHEET_HEIGHT);
+                params.height = (int) (AppUtil.getDeviceHeight(InvoiceActivity.this) * 0.9);
                 addItemSheet.setLayoutParams(params);
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
             }
@@ -655,7 +660,7 @@ public class InvoiceActivity extends InvoiceBaseActivity {
         spnPaymentType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                if (Constants.PAYMENT_TYPES[i].equals("Cheque")) {
+                if (Constants.PAYMENT_TYPES[i].equals(PaymentMethodAnnotation.CHEQUE)) {
                     edtChequeNo.setVisibility(View.VISIBLE);
                     txtChequeNo.setVisibility(View.VISIBLE);
                 } else {
@@ -676,8 +681,12 @@ public class InvoiceActivity extends InvoiceBaseActivity {
                     String amount = edtAmount.getText().toString();
                     try {
                         if (!amount.equals("")) {
-                            createPaymentObject(Constants.PAYMENT_TYPES[spnPaymentType.getSelectedItemPosition()], Double.parseDouble(amount));
-                            showPaymentInfo(Constants.PAYMENT_TYPES[spnPaymentType.getSelectedItemPosition()], Double.parseDouble(amount));
+
+                            String paymentType = Constants.PAYMENT_TYPES[spnPaymentType.getSelectedItemPosition()];
+                            String chequeNo = edtChequeNo.getText().toString();
+
+                            createPaymentObject(paymentType, chequeNo, Double.parseDouble(amount));
+                            showPaymentInfo(paymentType, chequeNo, Double.parseDouble(amount));
                             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
                         } else
                             Toast.makeText(InvoiceActivity.this, "Please enter valid amount", Toast.LENGTH_LONG).show();
@@ -689,10 +698,13 @@ public class InvoiceActivity extends InvoiceBaseActivity {
         });
     }
 
-    private void showPaymentInfo(String paymentType, double amount) {
+    private void showPaymentInfo(String paymentType, String chequeNo, double amount) {
         InvoiceItem item = new InvoiceItem();
         item.setInvoiceId(InvoiceItemAdapter.VIEW_TYPE_PAYMENT_AMOUNT);
+        if (paymentType.equals(PaymentMethodAnnotation.CHEQUE))
+            paymentType = paymentType.concat(" " + chequeNo);
         item.setItemName(paymentType);
+        item.setPrice(Calendar.getInstance().getTimeInMillis());
         item.setQuantity(1);
         item.setUnitPrice(amount);
 
@@ -715,10 +727,11 @@ public class InvoiceActivity extends InvoiceBaseActivity {
         }
     }
 
-    private void createPaymentObject(@PaymentMethodAnnotation.Method String method, double amount) {
+    private void createPaymentObject(String method, String chequeNo, double amount) {
         payment = new Payment();
         payment.setAmount(amount);
         payment.setMethod(method);
+        payment.setDetails(chequeNo);
         payment.setDate(Calendar.getInstance().getTime());
     }
 

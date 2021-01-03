@@ -1,5 +1,7 @@
 package lk.sabri.inventory.util;
 
+import lk.sabri.inventory.data.PaymentMethodAnnotation;
+
 public class Constants {
 
     public static final String SHARED_PREFERENCE_NAME = "inventory_app_prefs";
@@ -13,5 +15,5 @@ public class Constants {
 
     public static final double BOTTOM_SHEET_HEIGHT = 0.5;
 
-    public static final String[] PAYMENT_TYPES = {"Credit", "Cheque", "Cash"};
+    public static final String[] PAYMENT_TYPES = {PaymentMethodAnnotation.CREDIT, PaymentMethodAnnotation.CHEQUE, PaymentMethodAnnotation.CASH};
 }

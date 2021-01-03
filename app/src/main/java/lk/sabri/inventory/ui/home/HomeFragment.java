@@ -228,7 +228,10 @@ public class HomeFragment extends Fragment {
         root.findViewById(R.id.btn_home_create_invoice).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivityForResult(new Intent(root.getContext(), InvoiceActivity.class), REQUEST_CODE_ADD);
+                String username = context.getSharedPreferences(Constants.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE)
+                        .getString(Constants.PREFERENCE_LAST_USER, "");
+                if (!username.toLowerCase().equals("evergreen"))
+                    startActivityForResult(new Intent(root.getContext(), InvoiceActivity.class), REQUEST_CODE_ADD);
             }
         });
 
