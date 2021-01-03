@@ -24,8 +24,8 @@ public interface CustomerDAO {
     @Query("SELECT * FROM Customer WHERE custId IN (:customers)")
     Customer loadAllById(int customers);
 
-    @Query("SELECT * FROM Customer WHERE custName LIKE :first LIMIT 1")
-    Customer findByName(String first);
+    @Query("SELECT * FROM Customer WHERE custName LIKE :first")
+    List<Customer> findByName(String first);
 
     @Query("SELECT COUNT(custId) FROM Customer")
     int getCount();

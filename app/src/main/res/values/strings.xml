@@ -70,4 +70,7 @@
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="balance">Balance</string>
+    <string name="search_title">Search Invoice</string>
+    <string name="search_hint">Invoice Id/Customer</string>
+    <string name="no_results_found">No results found</string>
 </resources>

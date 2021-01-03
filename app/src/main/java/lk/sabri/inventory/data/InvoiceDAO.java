@@ -23,6 +23,12 @@ public interface InvoiceDAO {
     @Query("SELECT * FROM Invoice WHERE invoiceNo IN (:invoices)")
     List<Invoice> loadAllByIds(int[] invoices);
 
+    @Query("SELECT * FROM Invoice WHERE invoiceNo LIKE (:invoiceNo)")
+    List<Invoice> searchForId(String invoiceNo);
+
+    @Query("SELECT * FROM Invoice WHERE customerId = :custId")
+    List<Invoice> getByCustomer(int custId);
+
     @Query("SELECT COUNT(id) FROM invoice")
     int getCount();
 

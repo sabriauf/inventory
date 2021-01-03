@@ -14,24 +14,27 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:requestLegacyExternalStorage="true">
+        android:theme="@style/AppTheme">
+
+        <activity android:name=".activity.SearchActivity"
+            android:label="@string/app_name"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="lk.sabri.inventory.fileprovider"
-            android:grantUriPermissions="true"
-            android:exported="false">
+            android:exported="false"
+            android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepath" />
         </provider>
 
         <activity
-            android:label="@string/select_printer"
             android:name=".activity.PrinterConnectActivity"
+            android:label="@string/select_printer"
             android:theme="@style/AppThemeDialog" />
         <activity android:name=".activity.LoginActivity">
             <intent-filter>
@@ -47,7 +50,15 @@
         <activity
             android:name=".activity.MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:launchMode="singleTop">
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
