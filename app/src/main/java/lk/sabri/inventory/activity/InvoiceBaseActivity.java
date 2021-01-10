@@ -1,15 +1,24 @@
 package lk.sabri.inventory.activity;
 
 import android.Manifest;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.print.PrintAttributes;
 import android.text.format.DateFormat;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.AbsListView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -17,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.uttampanchasara.pdfgenerator.CreatePdf;
 
 import org.jetbrains.annotations.NotNull;
@@ -139,7 +149,6 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
 
     protected abstract boolean saveData(boolean close);
 
-
     protected void printInvoiceReceipt(String invoiceNo, Date saleDate, Customer customerObj, List<InvoiceItem> items, List<Payment> paymentList, double totalValue) {
         getPrinterInstance().beginTransactionPrint();
 
@@ -189,7 +198,7 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
         getPrinterInstance().printText(builderTotal.toString() + "\n", BixolonPrinter.ALIGNMENT_LEFT, BixolonPrinter.ATTRIBUTE_BOLD, 2);
 
         double payments = 0;
-        if (items != null) {
+        if (paymentList != null) {
             for (Payment item : paymentList) {
                 if (item != null) {
                     payments += item.getAmount();
@@ -200,7 +209,7 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
         }
 
         //printing balance
-        if(payments > 0) {
+        if (payments > 0) {
             StringBuilder builderBalance = new StringBuilder();
             String balance = String.format(Locale.getDefault(), "Rs. %,.2f", totalValue - payments);
             builderBalance.append("Balance");
@@ -271,7 +280,7 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
         }
 
         //printing balance
-        if(payments > 0) {
+        if (payments > 0) {
             StringBuilder builderBalance = new StringBuilder();
             String balance = String.format(Locale.getDefault(), "Rs. %,.2f", totalValue - payments);
             builderBalance.append("Balance");
@@ -389,16 +398,19 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
 
     private String getItemRowString(InvoiceItem item) {
         StringBuilder builderTitle = new StringBuilder();
-        builderTitle.append(item.getItemName());
-
         double totalPrice = item.getUnitPrice() * item.getQuantity();
         String price = String.format(Locale.getDefault(), "%,.2f\n", totalPrice);
-
         String quantity = String.format(Locale.getDefault(), "%d", item.getQuantity());
         String unitPrice = String.format(Locale.getDefault(), "%.2f", item.getUnitPrice());
-
         int sectionSize = PRINTER_CHAR_LENGTH_SIZE_1 / 11;
-        int balance = sectionSize * 5 - item.getItemName().length();
+        int nameLength = item.getItemName().length();
+
+        if (item.getItemName().length() > sectionSize * 5)
+            nameLength = sectionSize * 5;
+
+        String itemName = item.getItemName().substring(0, nameLength);
+        builderTitle.append(itemName);
+        int balance = sectionSize * 5 - itemName.length();
         for (int i = 0; i < balance; i++)
             builderTitle.append(" ");
 
@@ -486,5 +498,47 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
 
     enum Alignment {
         LEFT, CENTER, RIGHT
+    }
+
+    public void proceedToPrint(String invoiceNo, Date saleDate, Customer customerObj,
+                               List<InvoiceItem> items, List<Payment> paymentList, double totalValue) {
+        if (paymentList == null || paymentList.size() == 0) {
+            printInvoiceReceipt(invoiceNo, saleDate, customerObj, items, paymentList, totalValue);
+        } else
+            showPrintDialog(invoiceNo, saleDate, customerObj, items, paymentList, totalValue);
+    }
+
+    private void showPrintDialog(final String invoiceNo, final Date saleDate, final Customer customerObj,
+                                 final List<InvoiceItem> items, final List<Payment> paymentList, final double totalValue) {
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.custom_print_alert);
+        dialog.setCancelable(true);
+
+        final Window window = dialog.getWindow();
+        window.setLayout(AbsListView.LayoutParams.MATCH_PARENT, AbsListView.LayoutParams.WRAP_CONTENT);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        WindowManager.LayoutParams wlp = window.getAttributes();
+
+        wlp.gravity = Gravity.BOTTOM;
+        window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        window.setDimAmount(0.5f);
+        window.setAttributes(wlp);
+
+        dialog.findViewById(R.id.btn_print_invoice_alert).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                printInvoiceReceipt(invoiceNo, saleDate, customerObj, items, paymentList, totalValue);
+            }
+        });
+
+        dialog.findViewById(R.id.btn_print_balance_alert).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                printPaymentReceipt(invoiceNo, saleDate, customerObj, paymentList, totalValue);
+            }
+        });
+
+        dialog.show();
     }
 }

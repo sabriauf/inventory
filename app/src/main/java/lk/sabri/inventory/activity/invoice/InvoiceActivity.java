@@ -119,7 +119,7 @@ public class InvoiceActivity extends InvoiceBaseActivity {
             if (payment != null)
                 payments.add(payment);
 
-            printInvoiceReceipt(invoiceViewModel.getInvoiceNo().getValue(), invoiceViewModel.getDate().getValue(),
+            proceedToPrint(invoiceViewModel.getInvoiceNo().getValue(), invoiceViewModel.getDate().getValue(),
                     invoiceViewModel.getCustomer().getValue(), invoiceViewModel.getItems().getValue(), payments,
                     invoiceViewModel.getTotal().getValue());
             saveData(true);

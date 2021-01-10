@@ -109,7 +109,7 @@ public class InvoiceShowActivity extends InvoiceBaseActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                printInvoiceReceipt(invoice.getInvoiceNo(), invoice.getDate(), invoice.getCustomer(),
+                                proceedToPrint(invoice.getInvoiceNo(), invoice.getDate(), invoice.getCustomer(),
                                         invoice.getItems(), payments != null ? payments : new ArrayList<Payment>(), invoice.getTotal());
                             }
                         });
