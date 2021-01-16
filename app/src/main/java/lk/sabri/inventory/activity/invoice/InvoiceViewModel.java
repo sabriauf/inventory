@@ -86,9 +86,9 @@ public class InvoiceViewModel extends ViewModel {
     }
 
     public MutableLiveData<Double> getTotal() {
-        if(total.getValue() == null && items.getValue() != null)
+        if (total.getValue() == null && items.getValue() != null)
             total.setValue(getTotal(items.getValue()));
-        else if(items.getValue() == null)
+        else if (items.getValue() == null)
             total.setValue(0.0);
         return total;
     }
@@ -126,7 +126,8 @@ public class InvoiceViewModel extends ViewModel {
 
         for (InvoiceItem item : itemList) {
             if (item != null) {
-                total += item.getUnitPrice() * item.getQuantity();
+                if (item.getInvoiceId() > 10 || item.getInvoiceId() <= 0)
+                    total += item.getUnitPrice() * item.getQuantity();
             }
         }
 

@@ -5,13 +5,12 @@ apply plugin: 'com.google.firebase.crashlytics'
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.1"
+    flavorDimensions "default"
 
     defaultConfig {
         applicationId "lk.sabri.inventory"
         minSdkVersion 24
         targetSdkVersion 29
-        versionCode 6
-        versionName "1.5"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -31,6 +30,15 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    productFlavors {
+        production {
+            dimension "default"
+            versionCode 7
+            versionName "1.6.0"
+            setProperty("archivesBaseName", "Evergreen-$versionName")
         }
     }
 
