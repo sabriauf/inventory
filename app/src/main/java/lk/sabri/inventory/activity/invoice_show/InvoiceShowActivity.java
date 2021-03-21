@@ -97,33 +97,22 @@ public class InvoiceShowActivity extends InvoiceBaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_PRINTER_OPEN && resultCode == Activity.RESULT_OK) {
-            final Invoice invoice = invoiceViewModel.getInvoice().getValue();
-
-            if (invoice != null) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        PaymentDAO paymentDAO = InventoryDatabase.getInstance(InvoiceShowActivity.this).paymentDAO();
-                        final List<Payment> payments = paymentDAO.getPaymentsForInvoice(String.valueOf(invoice.getInvoiceNo()));
-
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                proceedToPrint(invoice.getInvoiceNo(), invoice.getDate(), invoice.getCustomer(),
-                                        invoice.getItems(), payments != null ? payments : new ArrayList<Payment>(), invoice.getTotal());
-                            }
-                        });
-                    }
-                }).start();
-            }
+            loadDataToPrint();
         }
     }
 
     @Override
     protected void callCreatePDF() {
         Invoice invoice = invoiceViewModel.getInvoice().getValue();
-        if (invoice != null)
-            createPDFFile(invoice.getInvoiceNo(), invoice.getDate(), invoice.getCustomer(), invoice.getItems(), invoice.getTotal());
+        if (invoice != null) {
+            final List<InvoiceItem> items = new ArrayList<>();
+            for (InvoiceItem invoiceItem : invoice.getItems()) {
+                if (invoiceItem.getInvoiceId() > 10)
+                    items.add(invoiceItem);
+            }
+
+            createPDFFile(invoice.getInvoiceNo(), invoice.getDate(), invoice.getCustomer(), items, invoice.getTotal());
+        }
     }
 
     protected boolean saveData(boolean close) {
@@ -363,5 +352,32 @@ public class InvoiceShowActivity extends InvoiceBaseActivity {
 //        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerInvoiceItems.getContext(),
 //                layoutManager.getOrientation());
 //        recyclerInvoiceItems.addItemDecoration(dividerItemDecoration);
+    }
+
+    private void loadDataToPrint() {
+        final Invoice invoice = invoiceViewModel.getInvoice().getValue();
+
+        if (invoice != null) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    PaymentDAO paymentDAO = InventoryDatabase.getInstance(InvoiceShowActivity.this).paymentDAO();
+                    final List<Payment> payments = paymentDAO.getPaymentsForInvoice(invoice.getInvoiceNo().substring(1));
+                    final List<InvoiceItem> items = new ArrayList<>();
+                    for (InvoiceItem invoiceItem : invoice.getItems()) {
+                        if (invoiceItem.getInvoiceId() > 10)
+                            items.add(invoiceItem);
+                    }
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            proceedToPrint(invoice.getInvoiceNo(), invoice.getDate(), invoice.getCustomer(),
+                                    items, payments != null ? payments : new ArrayList<Payment>(), invoice.getTotal());
+                        }
+                    });
+                }
+            }).start();
+        }
     }
 }

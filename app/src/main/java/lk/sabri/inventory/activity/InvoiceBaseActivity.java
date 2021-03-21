@@ -403,6 +403,10 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
         String quantity = String.format(Locale.getDefault(), "%d", item.getQuantity());
         String unitPrice = String.format(Locale.getDefault(), "%.2f", item.getUnitPrice());
         int sectionSize = PRINTER_CHAR_LENGTH_SIZE_1 / 11;
+
+        if (item.getItemName() == null)
+            item.setItemName("Unknown Item");
+
         int nameLength = item.getItemName().length();
 
         if (item.getItemName().length() > sectionSize * 5)
@@ -529,6 +533,7 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 printInvoiceReceipt(invoiceNo, saleDate, customerObj, items, paymentList, totalValue);
+                dialog.dismiss();
             }
         });
 
@@ -536,6 +541,7 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 printPaymentReceipt(invoiceNo, saleDate, customerObj, paymentList, totalValue);
+                dialog.dismiss();
             }
         });
 
