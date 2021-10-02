@@ -36,6 +36,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import lk.sabri.inventory.R;
 import lk.sabri.inventory.data.Customer;
@@ -71,12 +72,12 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.menu_item_share) {
 
-            File file = new File(Environment.getExternalStorageDirectory(), FOLDER_MAIN + "/" + invoiceId + ".pdf");
-            final boolean fileExits = file.exists();
+//            File file = new File(Environment.getExternalStorageDirectory(), FOLDER_MAIN + "/" + invoiceId + ".pdf");
+//            final boolean fileExits = file.exists();
 
-            if (!fileExits && invoiceId != null) {
+            if (invoiceId != null) {
                 checkPermissionToContinue("");
-            } else if (invoiceId == null) {
+            } else {
                 if (saveData(false))
                     new Handler().postDelayed(new Runnable() {
                         @Override
@@ -84,8 +85,8 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
                             checkPermissionToContinue("");
                         }
                     }, 2000);
-            } else {
-                checkPermissionToContinue(file.getAbsolutePath());
+//            } else {
+//                checkPermissionToContinue(file.getAbsolutePath());
             }
             return true;
         }
@@ -304,7 +305,7 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
         getPrinterInstance().endTransactionPrint();
     }
 
-    private String createHtmlCode(String invoiceNo, Date saleDate, Customer customerObj, List<InvoiceItem> items, double totalValue) {
+    private String createHtmlCode(String invoiceNo, Date saleDate, Customer customerObj, List<InvoiceItem> items, List<Payment> payments, double totalValue) {
 
         StringBuilder builder = new StringBuilder();
         builder.append(AppUtil.PDF_HTML_HEAD);
@@ -328,12 +329,31 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
 
         String formattedTotal = String.format(Locale.getDefault(), "Rs. %,.2f", totalValue);
         builder.append(String.format(Locale.getDefault(), AppUtil.PDF_HTML_TOTAL, "", formattedTotal));
+
+        double totalPayments = 0;
+        if (payments.size() > 0)
+            builder.append(AppUtil.PDF_HTML_TABLE_START);
+        for (Payment payment : payments) {
+            if (payment != null) {
+                totalPayments += payment.getAmount();
+                String dateString = TimeFormatter.getFormattedDate(TimeFormatter.DATE_FORMAT_DEFAULT, payment.getDate());
+                String amount = String.format(Locale.getDefault(), "%,.2f", payment.getAmount());
+                builder.append(String.format(Locale.getDefault(), AppUtil.PDF_HTML_PAY_ITEM, payment.getMethod(),
+                        dateString, amount));
+            }
+        }
+        if (totalPayments > 0) {
+            builder.append(AppUtil.PDF_HTML_TABLE_END);
+            String formattedPayment = String.format(Locale.getDefault(), "Rs. %,.2f", totalValue - totalPayments);
+            builder.append(String.format(Locale.getDefault(), AppUtil.PDF_HTML_PAY_FOOTER, formattedPayment));
+        }
+
         builder.append(AppUtil.PDF_HTML_FOOTER);
 
         return builder.toString();
     }
 
-    protected void createPDFFile(String invoiceNo, Date saleDate, Customer customerObj, List<InvoiceItem> items, double totalValue) {
+    protected void createPDFFile(String invoiceNo, Date saleDate, Customer customerObj, List<InvoiceItem> items, List<Payment> payments, double totalValue) {
 
         //Create folder if not exits
         File f = new File(Environment.getExternalStorageDirectory(), FOLDER_MAIN);
@@ -347,7 +367,7 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
                 .openPrintDialog(false)
                 .setContentBaseUrl(null)
                 .setPageSize(PrintAttributes.MediaSize.ISO_A4)
-                .setContent(createHtmlCode(invoiceNo, saleDate, customerObj, items, totalValue))
+                .setContent(createHtmlCode(invoiceNo, saleDate, customerObj, items, payments, totalValue))
                 .setFilePath(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + FOLDER_MAIN)
                 .setCallbackListener(new CreatePdf.PdfCallbackListener() {
                     @Override

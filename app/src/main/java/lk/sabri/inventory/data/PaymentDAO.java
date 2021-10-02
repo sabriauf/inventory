@@ -6,6 +6,7 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 
+import java.util.Date;
 import java.util.List;
 
 @Dao
@@ -16,6 +17,9 @@ public interface PaymentDAO {
 
     @Query("SELECT * FROM Payment WHERE invoiceId=:id ORDER BY date")
     List<Payment> getPaymentsForInvoice(String id);
+
+    @Query("SELECT * FROM Payment WHERE date > :time")
+    List<Payment> getAll(Date time);
 
     @Insert
     void insertAll(Payment... payments);

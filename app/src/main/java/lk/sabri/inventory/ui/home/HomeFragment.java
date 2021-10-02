@@ -32,10 +32,14 @@ import com.google.gson.GsonBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import lk.sabri.inventory.R;
 import lk.sabri.inventory.activity.invoice_show.InvoiceShowActivity;
@@ -47,6 +51,7 @@ import lk.sabri.inventory.data.InventoryDatabase;
 import lk.sabri.inventory.data.Invoice;
 import lk.sabri.inventory.data.InvoiceItem;
 import lk.sabri.inventory.data.LoginObject;
+import lk.sabri.inventory.data.Payment;
 import lk.sabri.inventory.data.SyncObject;
 import lk.sabri.inventory.data.UploadData;
 import lk.sabri.inventory.util.APIClient;
@@ -271,28 +276,12 @@ public class HomeFragment extends Fragment {
             @Override
             public void onHasConnection(boolean hasConnection) {
                 if (hasConnection) {
+
                     final InventoryDatabase database = InventoryDatabase.getInstance(context);
-                    long time = preferences.getLong(Constants.PREFERENCE_LAST_SYNC, 0);
-
-                    List<Invoice> invoices = database.invoiceDAO().getAll(new Date(time));
-                    for (Invoice invoice : invoices) {
-                        List<InvoiceItem> invoiceItems = database.invoiceItemDAO().loadAllByIds(invoice.getId());
-                        invoice.setItems(invoiceItems);
-//                        invoice.setCustomer(database.customerDAO().loadAllById(invoice.getCustomerId()));
-                    }
-                    List<Customer> customers = database.customerDAO().getUserInserted();
-
                     Gson gson = new GsonBuilder()
                             .setDateFormat("yyyy-MM-dd HH:mm:ss").create();
 
-                    String formattedDate = TimeFormatter.getFormattedDate("yyyy-MM-dd HH:mm", new Date(time));
-
-                    UploadData uploadData = new UploadData();
-                    uploadData.setCustomer(customers);
-                    uploadData.setInvoices(invoices);
-                    uploadData.setLastSync(formattedDate);
-
-                    String json = gson.toJson(uploadData);
+                    String json = gson.toJson(getSyncData(database));
 
                     try {
                         APIClient.getClient().create(APIInterface.class).syncData(new JSONObject(json)).enqueue(new Callback<SyncObject>() {
@@ -300,9 +289,17 @@ public class HomeFragment extends Fragment {
                             public void onResponse(@NonNull Call<SyncObject> call, @NonNull Response<SyncObject> response) {
                                 progressSync.setVisibility(View.GONE);
 
+                                Date synDate = new Date();
                                 if (response.body() != null) {
                                     String timeString = response.body().getSync_data().getTime();
-                                    Date synDate = TimeFormatter.getFormattedDate("yyyy-MM-dd HH:mm:ss", timeString);
+                                    try {
+                                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                                        formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+                                        synDate = formatter.parse(timeString);
+                                    } catch (ParseException e) {
+                                        e.printStackTrace();
+                                    }
+
                                     preferences.edit().putLong(Constants.PREFERENCE_LAST_SYNC, synDate.getTime()).apply();
                                     homeViewModel.setLastSync(synDate);
 
@@ -346,6 +343,30 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
+    }
+
+    private UploadData getSyncData(InventoryDatabase database) {
+        long time = preferences.getLong(Constants.PREFERENCE_LAST_SYNC, 0);
+        Date syncDate = new Date(time);
+
+        List<Invoice> invoices = database.invoiceDAO().getAll(syncDate);
+        for (Invoice invoice : invoices) {
+            List<InvoiceItem> invoiceItems = database.invoiceItemDAO().loadAllByIds(invoice.getId());
+            invoice.setItems(invoiceItems);
+//                        invoice.setCustomer(database.customerDAO().loadAllById(invoice.getCustomerId()));
+        }
+        List<Customer> customers = database.customerDAO().getUserInserted();
+        List<Payment> payments = database.paymentDAO().getAll(syncDate);
+
+        String formattedDate = TimeFormatter.getFormattedDate("yyyy-MM-dd HH:mm", new Date(time));
+
+        UploadData uploadData = new UploadData();
+        uploadData.setCustomer(customers);
+        uploadData.setInvoices(invoices);
+        uploadData.setPayments(payments);
+        uploadData.setLastSync(formattedDate);
+
+        return uploadData;
     }
 
     private void getUsers() {

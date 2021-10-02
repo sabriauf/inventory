@@ -31,10 +31,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import lk.sabri.inventory.R;
 import lk.sabri.inventory.activity.InvoiceBaseActivity;
 import lk.sabri.inventory.activity.PrinterConnectActivity;
+import lk.sabri.inventory.activity.invoice.InvoiceActivity;
 import lk.sabri.inventory.adapter.OnItemClickListener;
 import lk.sabri.inventory.adapter.item.InvoiceItemAdapter;
 import lk.sabri.inventory.data.InventoryDatabase;
@@ -103,7 +105,7 @@ public class InvoiceShowActivity extends InvoiceBaseActivity {
 
     @Override
     protected void callCreatePDF() {
-        Invoice invoice = invoiceViewModel.getInvoice().getValue();
+        final Invoice invoice = invoiceViewModel.getInvoice().getValue();
         if (invoice != null) {
             final List<InvoiceItem> items = new ArrayList<>();
             for (InvoiceItem invoiceItem : invoice.getItems()) {
@@ -111,7 +113,21 @@ public class InvoiceShowActivity extends InvoiceBaseActivity {
                     items.add(invoiceItem);
             }
 
-            createPDFFile(invoice.getInvoiceNo(), invoice.getDate(), invoice.getCustomer(), items, invoice.getTotal());
+//            createPDFFile(invoice.getInvoiceNo(), invoice.getDate(), invoice.getCustomer(), items, invoice.getTotal());
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    PaymentDAO paymentDAO = InventoryDatabase.getInstance(InvoiceShowActivity.this).paymentDAO();
+                    final List<Payment> payments = paymentDAO.getPaymentsForInvoice(String.valueOf(invoice.getId()));
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            createPDFFile(invoice.getInvoiceNo(), invoice.getDate(), invoice.getCustomer(), items, payments, invoice.getTotal());
+                        }
+                    });
+                }
+            }).start();
         }
     }
 

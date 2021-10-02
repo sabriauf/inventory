@@ -38,6 +38,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import lk.sabri.inventory.R;
 import lk.sabri.inventory.activity.InvoiceBaseActivity;
@@ -53,6 +54,7 @@ import lk.sabri.inventory.data.InvoiceItem;
 import lk.sabri.inventory.data.Item;
 import lk.sabri.inventory.data.LoginData;
 import lk.sabri.inventory.data.Payment;
+import lk.sabri.inventory.data.PaymentDAO;
 import lk.sabri.inventory.data.PaymentMethodAnnotation;
 import lk.sabri.inventory.ui.CustomDatePickerDialog;
 import lk.sabri.inventory.util.AppUtil;
@@ -738,9 +740,21 @@ public class InvoiceActivity extends InvoiceBaseActivity {
     @Override
     protected void callCreatePDF() {
         if (isValidData()) {
-            createPDFFile(invoiceViewModel.getInvoiceNo().getValue(), invoiceViewModel.getDate().getValue(),
-                    invoiceViewModel.getCustomer().getValue(), invoiceViewModel.getItems().getValue(),
-                    invoiceViewModel.getTotal().getValue());
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    PaymentDAO paymentDAO = InventoryDatabase.getInstance(InvoiceActivity.this).paymentDAO();
+                    final List<Payment> payments = paymentDAO.getPaymentsForInvoice(String.valueOf(invoiceViewModel.getInvoice().getValue().getId()));
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            createPDFFile(invoiceViewModel.getInvoiceNo().getValue(), invoiceViewModel.getDate().getValue(),
+                                    invoiceViewModel.getCustomer().getValue(), invoiceViewModel.getItems().getValue(), payments,
+                                    invoiceViewModel.getTotal().getValue());
+                        }
+                    });
+                }
+            });
         }
     }
 

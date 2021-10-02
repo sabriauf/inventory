@@ -4,7 +4,7 @@ apply plugin: 'com.google.firebase.crashlytics'
 
 android {
     compileSdkVersion 29
-    buildToolsVersion "29.0.1"
+    buildToolsVersion "29.0.2"
     flavorDimensions "default"
 
     defaultConfig {
@@ -36,8 +36,8 @@ android {
     productFlavors {
         production {
             dimension "default"
-            versionCode 7
-            versionName "1.6.0"
+            versionCode 10
+            versionName "1.7.0"
             setProperty("archivesBaseName", "Evergreen-$versionName")
         }
     }

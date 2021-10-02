@@ -91,6 +91,10 @@ public class AppUtil {
             "dotted 1px;\" /></td></tr><tr><td style=\"font-size:20px\">Sub Total</td><td style=\"" +
             "text-align:center;\">%s</td><td colspan=\"2\" style=\"text-align:right;font-size:20px\">%s" +
             "</td></tr></table><hr style=\"border-top: dotted 1px;\" />";
+    public static final String PDF_HTML_TABLE_START = "<table style=\"width:100%\"><tr >";
+    public static final String PDF_HTML_TABLE_END = "</table>";
+    public static final String PDF_HTML_PAY_ITEM = "<th style='width:40%%'>%s</th><th style='text-align:center;width:40%%'>%s</th><th style='text-align:right;width:20%%'>%s</th></tr>";
+    public static final String PDF_HTML_PAY_FOOTER = "<table style='width:100%%'><tr><th style='width:50%%;font-size:20px;'><b>Balance</b></th><th style='text-align:right;width:50%%;font-size:20px;'><b>%s</b></th></tr></table>";
     public static final String PDF_HTML_FOOTER = "<br><h4>*** Thank you for your purchase ***</h4>" +
             "<p style=\"text-align:center;font-size:12px\">Feel free to visit www.evergreenlanka.lk</p>" +
             "<hr style=\"border-top: dotted 2px;\" /></body></html>";
