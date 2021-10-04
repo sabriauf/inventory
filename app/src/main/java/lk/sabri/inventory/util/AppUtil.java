@@ -62,11 +62,12 @@ public class AppUtil {
         void onHasConnection(boolean hasConnection);
     }
 
-    public static int getNextId(LoginData user, int count) {
-        return getNextId(user, count, 3);
+    public static int getNextId(LoginData user) {
+        return getNextId(user, 5);
     }
 
-    public static int getNextId(LoginData user, int count, int leadingZeros) {
+    public static int getNextId(LoginData user, int leadingZeros) {
+        int count = Integer.parseInt(user.getLast_invoice_id());
         String format = "%0" + leadingZeros + "d";
         String id = String.format(Locale.getDefault(), format, (count + 1));
         String value = String.format(Locale.getDefault(), "%d%s", user != null ? user.getId() : 99, id);

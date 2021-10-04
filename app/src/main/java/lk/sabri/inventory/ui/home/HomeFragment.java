@@ -10,6 +10,7 @@ import android.os.Message;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.RelativeSizeSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -387,7 +388,7 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onFailure(Call<LoginObject> call, Throwable t) {
-
+                Log.d(HomeFragment.class.getSimpleName(), t.getMessage());
             }
         });
     }

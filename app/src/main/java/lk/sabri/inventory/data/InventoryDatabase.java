@@ -11,7 +11,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import lk.sabri.inventory.util.DateTypeConverter;
 
-@Database(entities = {Customer.class, Invoice.class, InvoiceItem.class, Item.class, LoginData.class, Payment.class}, version = 5)
+@Database(entities = {Customer.class, Invoice.class, InvoiceItem.class, Item.class, LoginData.class, Payment.class}, version = 6)
 @TypeConverters({DateTypeConverter.class})
 public abstract class InventoryDatabase extends RoomDatabase {
 

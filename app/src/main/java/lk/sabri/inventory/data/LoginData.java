@@ -12,6 +12,7 @@ public class LoginData {
     private int level;
     private String username;
     private String password;
+    private String last_invoice_id;
 
     public int getId() {
         return id;
@@ -51,5 +52,13 @@ public class LoginData {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getLast_invoice_id() {
+        return last_invoice_id;
+    }
+
+    public void setLast_invoice_id(String last_invoice_id) {
+        this.last_invoice_id = last_invoice_id;
     }
 }
