@@ -140,10 +140,10 @@ public class InvoiceActivity extends InvoiceBaseActivity {
             public void run() {
                 final List<Item> items = database.itemDAO().getAll();
                 final List<Customer> customers = database.customerDAO().getAll();
-//                final int count = database.invoiceDAO().getCount();
                 String username = getSharedPreferences(Constants.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE)
                         .getString(Constants.PREFERENCE_LAST_USER, "");
                 final LoginData user = database.loginDAO().loadAllByUsername(username);
+                final int idCount = database.invoiceDAO().getCount();
 
                 runOnUiThread(new Runnable() {
                     @Override
@@ -151,7 +151,7 @@ public class InvoiceActivity extends InvoiceBaseActivity {
                         invoiceViewModel.setAddItems(items);
                         invoiceViewModel.setCustomerList(customers);
                         invoiceViewModel.setInvoiceNo(String.format(Locale.getDefault(), "#%d",
-                                AppUtil.getNextId(user)));
+                                AppUtil.getNextId(user, idCount)));
 
                         setCustomerBottomSheet();
                         setAddItemBottomSheet();
@@ -256,13 +256,13 @@ public class InvoiceActivity extends InvoiceBaseActivity {
                 @Override
                 public void run() {
                     InventoryDatabase database = InventoryDatabase.getInstance(InvoiceActivity.this);
-//                    int id = database.invoiceDAO().getCount();
                     String username = getSharedPreferences(Constants.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE)
                             .getString(Constants.PREFERENCE_LAST_USER, "");
                     LoginData data = database.loginDAO().loadAllByUsername(username);
+                    int idCount = database.invoiceDAO().getCount();
 
                     if (temp != null) {
-                        temp.setId(AppUtil.getNextId(data));
+                        temp.setId(AppUtil.getNextId(data, idCount));
 
                         int count = 0;
                         for (InvoiceItem item : temp.getItems()) {
@@ -351,12 +351,13 @@ public class InvoiceActivity extends InvoiceBaseActivity {
                             String username = getSharedPreferences(Constants.SHARED_PREFERENCE_NAME,
                                     Context.MODE_PRIVATE).getString(Constants.PREFERENCE_LAST_USER, "");
                             LoginData login = database.loginDAO().loadAllByUsername(username);
-//                            int count = database.customerDAO().getCount();
+                            int count = database.customerDAO().getCount();
+
                             final Customer customer = new Customer();
                             customer.setAddress("");
                             customer.setCustName(edtCustomerSearch.getText().toString());
                             customer.setPhone("");
-                            customer.setCustId(AppUtil.getNextId(login));
+                            customer.setCustId(AppUtil.getNextId(login, count));
                             customer.setInserted(true);
 //                            customer.setDateInserted(Calendar.getInstance().getTime());
 

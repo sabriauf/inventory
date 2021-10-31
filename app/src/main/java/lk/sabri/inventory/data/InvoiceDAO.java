@@ -29,7 +29,7 @@ public interface InvoiceDAO {
     @Query("SELECT * FROM Invoice WHERE customerId = :custId")
     List<Invoice> getByCustomer(int custId);
 
-    @Query("SELECT COUNT(id) FROM invoice")
+    @Query("SELECT MAX(id) FROM invoice")
     int getCount();
 
     @Insert
