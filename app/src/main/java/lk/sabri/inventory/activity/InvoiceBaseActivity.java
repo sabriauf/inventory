@@ -1,6 +1,7 @@
 package lk.sabri.inventory.activity;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -26,12 +27,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
+import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnection;
+import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.uttampanchasara.pdfgenerator.CreatePdf;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -41,10 +45,12 @@ import java.util.TimeZone;
 import lk.sabri.inventory.R;
 import lk.sabri.inventory.data.Customer;
 import lk.sabri.inventory.data.InvoiceItem;
+import lk.sabri.inventory.data.Item;
 import lk.sabri.inventory.data.Payment;
 import lk.sabri.inventory.data.PaymentMethodAnnotation;
 import lk.sabri.inventory.util.AppUtil;
 import lk.sabri.inventory.util.BixolonPrinter;
+import lk.sabri.inventory.util.PosPrinter;
 import lk.sabri.inventory.util.TimeFormatter;
 
 public abstract class InvoiceBaseActivity extends AppCompatActivity {
@@ -67,6 +73,8 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.share_menu, menu);
         return true;
     }
+
+    protected abstract void onPrintingInvoices();
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -232,6 +240,250 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
         getPrinterInstance().printText("\n\n\n\n", BixolonPrinter.ALIGNMENT_CENTER, BixolonPrinter.ATTRIBUTE_BOLD, 1);
 
         getPrinterInstance().endTransactionPrint();
+    }
+
+    private void printInvoice(String invoiceNo, Date saleDate, Customer customerObj, List<InvoiceItem> items, List<Payment> paymentList, double totalValue){
+        String prints = "";
+        for (int i = 0; i < 48; i++) {
+            prints += ".";
+        }
+
+        prints += "\n\n";
+
+        prints += "[C]Evergreen Lanka\n";
+        prints += "[C]Kumbukulawa,Polpithigama\n";
+        prints += "[C]evergreenlanka@yahoo.com\n";
+        prints += "[C]www.evergreenlanka.lk\n";
+        prints += "[C]Tel: 0703 914 219 / 0372 273 107\n\n";
+        prints += "[C]:::::: SALES INVOICE ::::::\n\n";
+
+        prints += "[L]Invoice No " + invoiceNo + "\n";
+
+        prints += getCustomerDetails(customerObj, saleDate);
+
+        for (int i = 0; i < 48; i++) {
+            prints += ".";
+        }
+
+        prints += "\n";
+        prints+= "[L]Item[R]Qty[R]Price\n\n";
+
+        for(InvoiceItem item : items){
+            if(item.getItemName() == null || item.getItemId() == 0)
+                continue;
+            int max  = Math.min(item.getItemName().length(), 18);
+            double total = item.getQuantity() * item.getUnitPrice();
+            prints += "[L]" +item.getItemName().substring(0,max) +"[R]"+String.format(Locale.getDefault(),"%.2f",item.getUnitPrice())
+                    + "x"+String.format(Locale.getDefault(),"%d",item.getQuantity())+"[R]" + String.format(Locale.getDefault(),"%.2f",total)+"\n";
+        }
+
+        for (int i = 0; i < 48; i++) {
+            prints += ".";
+        }
+
+        prints += "\n\n";
+
+        prints += "[L]Sub total[R]"+String.format(Locale.getDefault(),"%.2f",totalValue)+"\n";
+
+        double payments = 0;
+        if (paymentList != null) {
+            for (Payment item : paymentList) {
+                if (item != null) {
+                    payments += item.getAmount();
+
+                    String itemName = item.getMethod().equals(PaymentMethodAnnotation.CHEQUE) ?
+                            String.format(Locale.getDefault(), PaymentMethodAnnotation.CHEQUE + " %s", item.getDetails()) : item.getMethod();
+
+                    String price = String.format(Locale.getDefault(), "%,.2f", item.getAmount());
+                    Calendar cal = Calendar.getInstance();
+
+                    cal.setTime(item.getDate());
+                    String date = DateFormat.format("dd-MM-yyyy", cal).toString();
+
+                    prints += "[L]"+itemName + "[C]"+date+"[R]"+price+"\n";
+                }
+            }
+        }
+
+        //printing balance
+        if (payments > 0) {
+
+            String balance = String.format(Locale.getDefault(), "Rs. %,.2f", totalValue - payments);
+            prints += "[L]Balance[R]"+balance+"\n\n";
+
+        }
+
+        //separator
+        for (int i = 0; i < 48; i++) {
+            prints += ".";
+        }
+
+        prints += "\n\n";
+
+        //footer
+        prints += "[C]*** Thank you for your purchase! ***\n";
+        prints += "[C]Feel free to visit www.evergreenlanka.lk\n";
+
+        for (int i = 0; i < 48; i++) {
+            prints += ".";
+        }
+
+
+
+        PosPrinter posPrinter = new PosPrinter(new WeakReference<>(this));
+        posPrinter.print(selectedDevice, prints, new PosPrinter.OnPrinterListener() {
+            @Override
+            public void onComplete() {
+                onPrintingInvoices();
+            }
+
+            @Override
+            public void onError() {
+
+            }
+        });
+
+    }
+
+    private String getCustomerDetails(Customer customerObj, Date saleDate) {
+        String date = TimeFormatter.getFormattedDate("yyyy-MM-dd", saleDate);
+        String data = "[L]Date : " + date +"\n";
+        data += "[L]Customer : " + customerObj.getCustName() +"\n";
+//        StringBuilder builder = new StringBuilder();
+//        builder.append("Date : ");
+//        builder.append(date);
+//        if (customerObj != null) {
+//            String customer = "Customer : " + customerObj.getCustName();
+//            int spaces = 40 - (builder.length() + customer.length());
+//            for (int i = 0; i < spaces; i++)
+//                builder.append(" ");
+//            builder.append(customer);
+//        }
+        return data;
+    }
+
+    private BluetoothConnection selectedDevice;
+
+    public void browseBluetoothDevice(String invoiceNo, Date saleDate, Customer customerObj, List<InvoiceItem> items, List<Payment> paymentList, double totalValue) {
+
+            final BluetoothConnection[] bluetoothDevicesList = (new BluetoothPrintersConnections()).getList();
+
+            if (bluetoothDevicesList != null) {
+                final String[] dev = new String[bluetoothDevicesList.length + 1];
+                dev[0] = "Default printer";
+                int i = 0;
+                for (BluetoothConnection device : bluetoothDevicesList) {
+                    dev[++i] = device.getDevice().getName();
+                }
+
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+                alertDialog.setTitle("Bluetooth printer selection");
+                alertDialog.setItems(
+                        dev,
+                        (dialogInterface, i1) -> {
+                            int index = i1 - 1;
+                            if (index == -1) {
+                                selectedDevice = null;
+                            } else {
+                                selectedDevice = bluetoothDevicesList[index];
+                                printInvoice(invoiceNo, saleDate, customerObj, items, paymentList, totalValue);
+                            }
+                            //  Button button = (Button) findViewById(R.id.button_bluetooth_browse);
+                            //  button.setText(items[i1]);
+                        }
+                );
+
+                AlertDialog alert = alertDialog.create();
+                alert.setCanceledOnTouchOutside(false);
+                alert.show();
+            }
+
+    }
+
+    protected void printReceipts(String invoiceNo, Date saleDate, Customer customerObj, List<Payment> items, double totalValue){
+        String prints = "";
+        for (int i = 0; i < 48; i++) {
+            prints += ".";
+        }
+
+        prints += "\n\n";
+
+        prints += "[C]Evergreen Lanka\n";
+        prints += "[C]Kumbukulawa,Polpithigama\n";
+        prints += "[C]evergreenlanka@yahoo.com\n";
+        prints += "[C]www.evergreenlanka.lk\n";
+        prints += "[C]Tel: 0703 914 219 / 0372 273 107\n\n";
+        prints += "[C]:::::: SALES INVOICE ::::::\n\n";
+
+        prints += "[L]Invoice No " + invoiceNo + "\n";
+
+        prints += getCustomerDetails(customerObj, saleDate);
+
+        for (int i = 0; i < 48; i++) {
+            prints += ".";
+        }
+
+        prints += "\n\n";
+        String total = String.format(Locale.getDefault(), "Rs. %,.2f", totalValue);
+
+        prints+="[L]Sub total[R]"+total+"\n";
+
+
+        double payments = 0;
+        if (items != null) {
+            for (Payment item : items) {
+                if (item != null) {
+                    payments += item.getAmount();
+
+                    String itemName = item.getMethod().equals(PaymentMethodAnnotation.CHEQUE) ?
+                            String.format(Locale.getDefault(), PaymentMethodAnnotation.CHEQUE + " %s", item.getDetails()) : item.getMethod();
+
+                    String price = String.format(Locale.getDefault(), "%,.2f", item.getAmount());
+                    Calendar cal = Calendar.getInstance();
+
+                    cal.setTime(item.getDate());
+                    String date = DateFormat.format("dd-MM-yyyy", cal).toString();
+
+                    prints += "[L]"+itemName + "[C]"+date+"[R]"+price+"\n";
+                }
+            }
+        }
+
+        //printing balance
+        if (payments > 0) {
+            String balance = String.format(Locale.getDefault(), "Rs. %,.2f", totalValue - payments);
+            prints += "[L]Balance[R]"+balance+"\n\n";
+
+        }
+
+        //separator
+        for (int i = 0; i < 48; i++) {
+            prints += ".";
+        }
+
+        prints += "\n\n";
+
+        //footer
+        prints += "[C]*** Thank you for your purchase! ***\n";
+        prints += "[C]Feel free to visit www.evergreenlanka.lk\n";
+
+        for (int i = 0; i < 48; i++) {
+            prints += ".";
+        }
+
+
+        PosPrinter posPrinter = new PosPrinter(new WeakReference<>(this));
+        posPrinter.print(selectedDevice, prints, new PosPrinter.OnPrinterListener() {
+            @Override
+            public void onComplete() {
+                onPrintingInvoices();
+            }
+
+            @Override
+            public void onError() {
+               // onPrintingInvoices();
+            }
+        });
     }
 
     protected void printPaymentReceipt(String invoiceNo, Date saleDate, Customer customerObj, List<Payment> items, double totalValue) {
@@ -527,9 +779,12 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
     public void proceedToPrint(String invoiceNo, Date saleDate, Customer customerObj,
                                List<InvoiceItem> items, List<Payment> paymentList, double totalValue) {
         if (paymentList == null || paymentList.size() == 0) {
-            printInvoiceReceipt(invoiceNo, saleDate, customerObj, items, paymentList, totalValue);
+            browseBluetoothDevice(invoiceNo, saleDate, customerObj, items, paymentList, totalValue);
+          //  printInvoiceReceipt(invoiceNo, saleDate, customerObj, items, paymentList, totalValue);
         } else
             showPrintDialog(invoiceNo, saleDate, customerObj, items, paymentList, totalValue);
+
+
     }
 
     private void showPrintDialog(final String invoiceNo, final Date saleDate, final Customer customerObj,
@@ -552,7 +807,7 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
         dialog.findViewById(R.id.btn_print_invoice_alert).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                printInvoiceReceipt(invoiceNo, saleDate, customerObj, items, paymentList, totalValue);
+                printInvoice(invoiceNo, saleDate, customerObj, items, paymentList, totalValue);
                 dialog.dismiss();
             }
         });
@@ -560,7 +815,7 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
         dialog.findViewById(R.id.btn_print_balance_alert).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                printPaymentReceipt(invoiceNo, saleDate, customerObj, paymentList, totalValue);
+                printReceipts(invoiceNo, saleDate, customerObj, paymentList, totalValue);
                 dialog.dismiss();
             }
         });

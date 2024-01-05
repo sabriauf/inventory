@@ -4,14 +4,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -79,6 +83,11 @@ public class InvoiceShowActivity extends InvoiceBaseActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         return onCustomCreateOptionsMenu(menu);
+    }
+
+    @Override
+    protected void onPrintingInvoices() {
+
     }
 
     @Override
@@ -181,10 +190,10 @@ public class InvoiceShowActivity extends InvoiceBaseActivity {
         findViewById(R.id.btn_invoice_print).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                bixolonPrinter = new BixolonPrinter(InvoiceShowActivity.this);
-
-                Intent intent = new Intent(getApplicationContext(), PrinterConnectActivity.class);
-                startActivityForResult(intent, REQUEST_PRINTER_OPEN);
+               // bixolonPrinter = new BixolonPrinter(InvoiceShowActivity.this);
+                printBluetooth();
+//                Intent intent = new Intent(getApplicationContext(), PrinterConnectActivity.class);
+//                startActivityForResult(intent, REQUEST_PRINTER_OPEN);
             }
         });
     }
@@ -396,4 +405,53 @@ public class InvoiceShowActivity extends InvoiceBaseActivity {
             }).start();
         }
     }
+
+    public void printBluetooth() {
+
+        this.checkBluetoothPermissions(this::loadDataToPrint);
+    }
+
+
+    public interface OnBluetoothPermissionsGranted {
+        void onPermissionsGranted();
+    }
+
+    public static final int PERMISSION_BLUETOOTH = 1;
+    public static final int PERMISSION_BLUETOOTH_ADMIN = 2;
+    public static final int PERMISSION_BLUETOOTH_CONNECT = 3;
+    public static final int PERMISSION_BLUETOOTH_SCAN = 4;
+
+    public InvoiceActivity.OnBluetoothPermissionsGranted onBluetoothPermissionsGranted;
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            switch (requestCode) {
+                case PERMISSION_BLUETOOTH:
+                case PERMISSION_BLUETOOTH_ADMIN:
+                case PERMISSION_BLUETOOTH_CONNECT:
+                case PERMISSION_BLUETOOTH_SCAN:
+                    this.checkBluetoothPermissions(this.onBluetoothPermissionsGranted);
+                    break;
+            }
+        }
+    }
+
+    public void checkBluetoothPermissions(InvoiceActivity.OnBluetoothPermissionsGranted onBluetoothPermissionsGranted) {
+        this.onBluetoothPermissionsGranted = onBluetoothPermissionsGranted;
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S && ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH}, PERMISSION_BLUETOOTH);
+        } else if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S && ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_ADMIN}, PERMISSION_BLUETOOTH_ADMIN);
+        } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S && ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, PERMISSION_BLUETOOTH_CONNECT);
+        } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S && ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_SCAN}, PERMISSION_BLUETOOTH_SCAN);
+        } else {
+            this.onBluetoothPermissionsGranted.onPermissionsGranted();
+        }
+    }
+
+
 }

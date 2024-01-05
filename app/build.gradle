@@ -3,14 +3,14 @@ apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 33
     buildToolsVersion "29.0.2"
     flavorDimensions "default"
 
     defaultConfig {
         applicationId "lk.sabri.inventory"
         minSdkVersion 24
-        targetSdkVersion 29
+        targetSdkVersion 33
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -40,6 +40,10 @@ android {
             versionName "1.7.2"
             setProperty("archivesBaseName", "Evergreen-$versionName")
         }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 
 }
@@ -76,4 +80,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    implementation 'com.github.DantSu:ESCPOS-ThermalPrinter-Android:3.3.0'
+
 }
