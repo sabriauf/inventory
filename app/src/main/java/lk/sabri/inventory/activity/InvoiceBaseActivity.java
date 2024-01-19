@@ -273,8 +273,9 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
                 continue;
             int max  = Math.min(item.getItemName().length(), 18);
             double total = item.getQuantity() * item.getUnitPrice();
-            prints += "[L]" +item.getItemName().substring(0,max) +"[R]"+String.format(Locale.getDefault(),"%.2f",item.getUnitPrice())
-                    + "x"+String.format(Locale.getDefault(),"%d",item.getQuantity())+"[R]" + String.format(Locale.getDefault(),"%.2f",total)+"\n";
+//            prints += "[L]" +item.getItemName().substring(0,max) +"[R]"+String.format(Locale.getDefault(),"%.2f",item.getUnitPrice())
+//                    + "x"+String.format(Locale.getDefault(),"%d",item.getQuantity())+"[R]" + String.format(Locale.getDefault(),"%.2f",total)+"\n";
+            prints += getfromatedItemRow(item);
         }
 
         for (int i = 0; i < 48; i++) {
@@ -343,6 +344,21 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private String getfromatedItemRow(InvoiceItem item ){
+        final int max = 18;
+        double total = item.getQuantity() * item.getUnitPrice();
+        if(item.getItemName().length() > max){
+            int remain = item.getItemName().length() - 18;
+            return  "[L]" +item.getItemName().substring(0,max) +"[R]"+String.format(Locale.getDefault(),"%.2f",item.getUnitPrice())
+                    + "x"+String.format(Locale.getDefault(),"%d",item.getQuantity())+"[R]" + String.format(Locale.getDefault(),"%.2f",total)+"\n"
+                    +"[L]" + item.getItemName().substring(max,Math.min((remain + max) ,item.getItemName().length() -1)) + "\n";
+        }
+        else{
+           return  "[L]" +item.getItemName() +"[R]"+String.format(Locale.getDefault(),"%.2f",item.getUnitPrice())
+                    + "x"+String.format(Locale.getDefault(),"%d",item.getQuantity())+"[R]" + String.format(Locale.getDefault(),"%.2f",total)+"\n";
+        }
     }
 
     private String getCustomerDetails(Customer customerObj, Date saleDate) {
