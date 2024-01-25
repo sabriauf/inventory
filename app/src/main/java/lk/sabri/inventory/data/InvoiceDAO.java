@@ -37,4 +37,7 @@ public interface InvoiceDAO {
 
     @Delete
     void delete(Invoice invoice);
+
+    @Query("SELECT * FROM INVOICE")
+    List<Invoice> getAllInvoices();
 }

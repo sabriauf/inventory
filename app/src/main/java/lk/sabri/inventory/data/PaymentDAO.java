@@ -29,4 +29,7 @@ public interface PaymentDAO {
 
     @Delete
     void delete(Payment payment);
+
+    @Query("SELECT * FROM Payment")
+    List<Payment> getAllPayments();
 }

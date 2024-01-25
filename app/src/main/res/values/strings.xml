@@ -75,4 +75,5 @@
     <string name="no_results_found">No results found</string>
     <string name="print_invoice">Print Invoice</string>
     <string name="print_balance">Print Balance</string>
+    <string name="sync_all">Sync All</string>
 </resources>

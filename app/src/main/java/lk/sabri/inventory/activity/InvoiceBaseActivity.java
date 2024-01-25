@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
@@ -242,7 +243,7 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
         getPrinterInstance().endTransactionPrint();
     }
 
-    private void printInvoice(String invoiceNo, Date saleDate, Customer customerObj, List<InvoiceItem> items, List<Payment> paymentList, double totalValue){
+    private void printInvoice(String invoiceNo, Date saleDate, Customer customerObj, List<InvoiceItem> items, List<Payment> paymentList, double totalValue) {
         String prints = "";
         for (int i = 0; i < 48; i++) {
             prints += ".";
@@ -266,12 +267,12 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
         }
 
         prints += "\n";
-        prints+= "[L]Item[R]Qty[R]Price\n\n";
+        prints += "[L]Item[R]Qty[R]Price\n\n";
 
-        for(InvoiceItem item : items){
-            if(item.getItemName() == null || item.getItemId() == 0)
+        for (InvoiceItem item : items) {
+            if (item.getItemName() == null || item.getItemId() == 0)
                 continue;
-            int max  = Math.min(item.getItemName().length(), 18);
+            int max = Math.min(item.getItemName().length(), 18);
             double total = item.getQuantity() * item.getUnitPrice();
 //            prints += "[L]" +item.getItemName().substring(0,max) +"[R]"+String.format(Locale.getDefault(),"%.2f",item.getUnitPrice())
 //                    + "x"+String.format(Locale.getDefault(),"%d",item.getQuantity())+"[R]" + String.format(Locale.getDefault(),"%.2f",total)+"\n";
@@ -284,7 +285,7 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
 
         prints += "\n\n";
 
-        prints += "[L]Sub total[R]"+String.format(Locale.getDefault(),"%.2f",totalValue)+"\n";
+        prints += "[L]Sub total[R]" + String.format(Locale.getDefault(), "%.2f", totalValue) + "\n";
 
         double payments = 0;
         if (paymentList != null) {
@@ -301,7 +302,7 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
                     cal.setTime(item.getDate());
                     String date = DateFormat.format("dd-MM-yyyy", cal).toString();
 
-                    prints += "[L]"+itemName + "[C]"+date+"[R]"+price+"\n";
+                    prints += "[L]" + itemName + "[C]" + date + "[R]" + price + "\n";
                 }
             }
         }
@@ -310,7 +311,7 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
         if (payments > 0) {
 
             String balance = String.format(Locale.getDefault(), "Rs. %,.2f", totalValue - payments);
-            prints += "[L]Balance[R]"+balance+"\n\n";
+            prints += "[L]Balance[R]" + balance + "\n\n";
 
         }
 
@@ -330,7 +331,6 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
         }
 
 
-
         PosPrinter posPrinter = new PosPrinter(new WeakReference<>(this));
         posPrinter.print(selectedDevice, prints, new PosPrinter.OnPrinterListener() {
             @Override
@@ -346,25 +346,24 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
 
     }
 
-    private String getfromatedItemRow(InvoiceItem item ){
+    private String getfromatedItemRow(InvoiceItem item) {
         final int max = 18;
         double total = item.getQuantity() * item.getUnitPrice();
-        if(item.getItemName().length() > max){
+        if (item.getItemName().length() > max) {
             int remain = item.getItemName().length() - 18;
-            return  "[L]" +item.getItemName().substring(0,max) +"[R]"+String.format(Locale.getDefault(),"%.2f",item.getUnitPrice())
-                    + "x"+String.format(Locale.getDefault(),"%d",item.getQuantity())+"[R]" + String.format(Locale.getDefault(),"%.2f",total)+"\n"
-                    +"[L]" + item.getItemName().substring(max,Math.min((remain + max) ,item.getItemName().length() -1)) + "\n";
-        }
-        else{
-           return  "[L]" +item.getItemName() +"[R]"+String.format(Locale.getDefault(),"%.2f",item.getUnitPrice())
-                    + "x"+String.format(Locale.getDefault(),"%d",item.getQuantity())+"[R]" + String.format(Locale.getDefault(),"%.2f",total)+"\n";
+            return "[L]" + item.getItemName().substring(0, max) + "[R]" + String.format(Locale.getDefault(), "%.2f", item.getUnitPrice())
+                    + "x" + String.format(Locale.getDefault(), "%d", item.getQuantity()) + "[R]" + String.format(Locale.getDefault(), "%.2f", total) + "\n"
+                    + "[L]" + item.getItemName().substring(max, Math.min((remain + max), item.getItemName().length() - 1)).trim() + "\n";
+        } else {
+            return "[L]" + item.getItemName() + "[R]" + String.format(Locale.getDefault(), "%.2f", item.getUnitPrice())
+                    + "x" + String.format(Locale.getDefault(), "%d", item.getQuantity()) + "[R]" + String.format(Locale.getDefault(), "%.2f", total) + "\n";
         }
     }
 
     private String getCustomerDetails(Customer customerObj, Date saleDate) {
         String date = TimeFormatter.getFormattedDate("yyyy-MM-dd", saleDate);
-        String data = "[L]Date : " + date +"\n";
-        data += "[L]Customer : " + customerObj.getCustName() +"\n";
+        String data = "[L]Date : " + date + "\n";
+        data += "[L]Customer : " + customerObj.getCustName() + "\n";
 //        StringBuilder builder = new StringBuilder();
 //        builder.append("Date : ");
 //        builder.append(date);
@@ -382,14 +381,17 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
 
     public void browseBluetoothDevice(String invoiceNo, Date saleDate, Customer customerObj, List<InvoiceItem> items, List<Payment> paymentList, double totalValue) {
 
-            final BluetoothConnection[] bluetoothDevicesList = (new BluetoothPrintersConnections()).getList();
+        final BluetoothConnection[] bluetoothDevicesList = (new BluetoothPrintersConnections()).getList();
 
-            if (bluetoothDevicesList != null) {
-                final String[] dev = new String[bluetoothDevicesList.length + 1];
-                dev[0] = "Default printer";
-                int i = 0;
-                for (BluetoothConnection device : bluetoothDevicesList) {
-                    dev[++i] = device.getDevice().getName();
+        if (bluetoothDevicesList != null) {
+            final String[] dev = new String[bluetoothDevicesList.length + 1];
+            dev[0] = "Default printer";
+            int i = 0;
+            for (BluetoothConnection device : bluetoothDevicesList) {
+//                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+//                    return;
+//                }
+                dev[++i] = device.getDevice().getName();
                 }
 
                 AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
