@@ -3,7 +3,6 @@ package lk.sabri.inventory.activity;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -24,13 +23,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnection;
 import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.uttampanchasara.pdfgenerator.CreatePdf;
 
 import org.jetbrains.annotations.NotNull;
@@ -41,12 +38,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 
 import lk.sabri.inventory.R;
 import lk.sabri.inventory.data.Customer;
 import lk.sabri.inventory.data.InvoiceItem;
-import lk.sabri.inventory.data.Item;
 import lk.sabri.inventory.data.Payment;
 import lk.sabri.inventory.data.PaymentMethodAnnotation;
 import lk.sabri.inventory.util.AppUtil;
@@ -626,11 +621,14 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
     protected void createPDFFile(String invoiceNo, Date saleDate, Customer customerObj, List<InvoiceItem> items, List<Payment> payments, double totalValue) {
 
         //Create folder if not exits
-        File f = new File(Environment.getExternalStorageDirectory(), FOLDER_MAIN);
+        File f = new File(Environment.getExternalStorageDirectory().getPath() +"/"+ FOLDER_MAIN);
+       // File f = new File(+"/"+ FOLDER_MAIN);
         if (!f.exists()) {
             if (f.mkdirs())
                 Toast.makeText(InvoiceBaseActivity.this, "New Folder created", Toast.LENGTH_LONG).show();
         }
+
+
 
         new CreatePdf(this)
                 .setPdfName(invoiceNo.substring(1))
@@ -638,7 +636,7 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
                 .setContentBaseUrl(null)
                 .setPageSize(PrintAttributes.MediaSize.ISO_A4)
                 .setContent(createHtmlCode(invoiceNo, saleDate, customerObj, items, payments, totalValue))
-                .setFilePath(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + FOLDER_MAIN)
+                .setFilePath(Environment.getExternalStorageDirectory().getPath() +"/"+ FOLDER_MAIN)
                 .setCallbackListener(new CreatePdf.PdfCallbackListener() {
                     @Override
                     public void onFailure(@NotNull String s) {
