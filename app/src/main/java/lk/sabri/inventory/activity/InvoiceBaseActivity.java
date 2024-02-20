@@ -8,9 +8,12 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.print.PrintAttributes;
+import android.provider.Settings;
 import android.text.format.DateFormat;
 import android.view.Gravity;
 import android.view.Menu;
@@ -21,7 +24,12 @@ import android.view.WindowManager;
 import android.widget.AbsListView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
@@ -65,6 +73,8 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
     //primary data
     protected String invoiceId;
 
+    private ActivityResultLauncher<Intent> permissionLauncher;
+
     public boolean onCustomCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.share_menu, menu);
         return true;
@@ -98,19 +108,64 @@ public abstract class InvoiceBaseActivity extends AppCompatActivity {
     }
 
     private void checkPermissionToContinue(String filePath) {
-        if (ContextCompat.checkSelfPermission(InvoiceBaseActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
-                PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
-                InvoiceBaseActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) ==
-                PackageManager.PERMISSION_GRANTED) {
-            if (!filePath.equals("")) {
-                getDefaultShareIntent(filePath);
-                startActivity(Intent.createChooser(sharingIntent, "Share via"));
-            } else
-                callCreatePDF();
-        } else {
-            Toast.makeText(InvoiceBaseActivity.this, "Requesting permission to create PDF", Toast.LENGTH_LONG).show();
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_PERMISSION_WRITE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if(Environment.isExternalStorageManager()){
+                if (!filePath.equals("")) {
+                    getDefaultShareIntent(filePath);
+                    startActivity(Intent.createChooser(sharingIntent, "Share via"));
+                } else
+                    callCreatePDF();
+            }
+            else{
+                permission();
+            }
+        }
+        else {
+            if (ContextCompat.checkSelfPermission(InvoiceBaseActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+                    PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                    InvoiceBaseActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) ==
+                    PackageManager.PERMISSION_GRANTED) {
+                if (!filePath.equals("")) {
+                    getDefaultShareIntent(filePath);
+                    startActivity(Intent.createChooser(sharingIntent, "Share via"));
+                } else
+                    callCreatePDF();
+            } else {
+                Toast.makeText(InvoiceBaseActivity.this, "Requesting permission to create PDF", Toast.LENGTH_LONG).show();
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_PERMISSION_WRITE);
+            }
+        }
+    }
+
+    @Override
+    protected void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        permissionLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if(Environment.isExternalStorageManager())
+                {
+                    Toast.makeText(this,"Storage permission granted!",Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    Toast.makeText(this,"Storage permission required!",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        super.onCreate(savedInstanceState);
+    }
+
+    private void permission(){
+        try {
+            Intent intent = new Intent();
+            intent.setAction( Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+            Uri uri = Uri.fromParts("package", getPackageName(), null);
+            intent.setData(uri);
+            permissionLauncher.launch(intent);
+        } catch ( Exception e) {
+            Intent intent = new Intent();
+            intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+            permissionLauncher.launch(intent);
         }
     }
 

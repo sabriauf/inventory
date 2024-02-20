@@ -75,13 +75,18 @@ public class LoginActivity extends AppCompatActivity {
                 public void run() {
                     InventoryDatabase database = InventoryDatabase.getInstance(LoginActivity.this);
                     LoginData data = database.loginDAO().loadAllByUsername(edtUserName.getText().toString());
-                    if(data != null && edtPassword.getText().toString().equals(data.getPassword()))
+                    if(data != null && edtPassword.getText().toString().equals(data.getPassword())) {
+
+
+
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                setLastLoginUser(data);
                                 proceedLogin();
                             }
                         });
+                    }
                     else {
                         isLoginProcess = false;
                         runOnUiThread(new Runnable() {
@@ -93,6 +98,16 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 }
             }).start();
+        }
+    }
+
+    private void setLastLoginUser(LoginData data) {
+        SharedPreferences preferences = getSharedPreferences(Constants.SHARED_PREFERENCE_NAME, Context.MODE_PRIVATE);
+        int id =  preferences.getInt("user_id",-1);
+        if(id == -1 || id != data.getId()){
+            preferences.edit().putLong(Constants.PREFERENCE_LAST_SYNC,0)
+                    .putInt("user_id",data.getId()).commit();//.getLong(Constants.PREFERENCE_LAST_SYNC, 0);
+
         }
     }
 
